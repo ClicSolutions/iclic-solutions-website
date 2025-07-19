@@ -1,113 +1,112 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <title>Sistem e‑Kubor Masjid</title>
+  <meta charset="UTF-8" />
+  <title>Sistem e-Kubor Masjid</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f8f9fa; }
-    h1 { text-align: center; color: #114477; }
-    #search { margin: 20px auto; display: block; width: 100%; max-width: 500px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; padding: 20px; }
+    h1 { text-align: center; color: #5cc6ff; }
+    #search { width: 100%; max-width: 400px; margin: 20px auto; padding: 10px; border-radius: 5px; border: none; display: block; font-size: 16px; }
 
-    table { width: 100%; border-collapse: collapse; background: #fff; margin-bottom: 20px; }
-    th, td { padding: 10px; border: 1px solid #ddd; }
-    tr:hover { background: #eef; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #222; }
+    th, td { padding: 10px; border: 1px solid #444; text-align: left; }
+    th { background: #333; }
+    tr:hover { background: #444; cursor: pointer; }
 
     #overlay, #popup {
-      display: none; position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%; z-index: 10;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     }
-    #overlay { background: rgba(0,0,0,0.6); }
-
+    #overlay {
+      background: rgba(0, 0, 0, 0.7); display: none; z-index: 9;
+    }
     #popup {
-      z-index: 11; max-width: 400px; background: #fff;
-      margin: 5% auto; padding: 20px; position: relative;
-      border-radius: 10px; box-shadow: 0 0 20px #000;
+      background: #fff; color: #000; max-width: 400px; margin: 5% auto;
+      padding: 20px; border-radius: 8px; box-shadow: 0 0 15px #000;
+      display: none; z-index: 10; position: relative;
     }
-    #popup h2 { margin-top: 0; }
-    #popup img { width: 100%; max-height: 200px; margin: 10px 0; }
-
     .btn-close {
-      background: #c00; color: #fff; border: none;
-      padding: 8px 12px; margin-top: 10px; cursor: pointer;
-      float: right;
+      background: #c00; color: white; padding: 6px 10px; border: none; border-radius: 4px;
+      position: absolute; top: 10px; right: 10px; cursor: pointer;
     }
     .map-link {
-      display: inline-block; margin-top: 10px;
-      background: #0077cc; color: #fff;
-      padding: 8px 12px; border-radius: 5px;
-      text-decoration: none;
+      display: inline-block; background: #0088cc; color: #fff; padding: 6px 10px; text-decoration: none; border-radius: 4px; margin-top: 10px;
+    }
+    img.qr {
+      margin-top: 10px;
+      max-width: 100%;
+      height: auto;
     }
   </style>
 </head>
 <body>
 
-  <h1>Sistem e‑Kubor Masjid</h1>
+  <h1>Sistem e-Kubor Masjid</h1>
   <input type="text" id="search" placeholder="Cari nama simati...">
 
   <table id="dataTable">
     <thead>
-      <tr>
-        <th>No</th><th>Nama</th><th>No Lot</th><th>Tarikh Meninggal</th>
-      </tr>
+      <tr><th>No</th><th>Nama</th><th>No Lot</th><th>Tarikh Meninggal</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <div id="overlay"></div>
   <div id="popup">
+    <button class="btn-close" onclick="closePopup()">X</button>
     <h2 id="pName"></h2>
     <p><strong>No KP:</strong> <span id="pKP"></span></p>
     <p><strong>Tarikh Meninggal:</strong> <span id="pTarikh"></span></p>
     <p><strong>Waris:</strong> <span id="pWaris"></span></p>
     <p><strong>Telefon:</strong> <span id="pTel"></span></p>
     <p><strong>No Lot:</strong> <span id="pLot"></span></p>
-    <p><strong>Penduduk Kariah:</strong> <span id="pPenduduk"></span></p>
-    <a id="pMap" class="map-link" target="_blank">📍 Lihat di Peta</a>
-    <img id="pQR" src="" alt="QR Lawatan">
-    <button class="btn-close" onclick="closePopup()">Tutup</button>
+    <p><strong>Penduduk Kariah:</strong> <span id="pKariah"></span></p>
+    <a class="map-link" id="pMap" target="_blank">📍 Lihat di Peta</a>
+    <img id="pQR" class="qr" src="" alt="QR Code">
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/tabletop@1.5.1/tabletop.min.js"></script>
   <script>
     const sheetKey = "14Zx6CbKaLws6Rk1vVs2zN5OAZp-6QypEL__d_YGaxV8";
+    let allData = [];
 
     window.onload = () => {
-      Tabletop.init({ key: sheetKey, callback: renderTable, simpleSheet: true });
+      Tabletop.init({
+        key: sheetKey,
+        simpleSheet: true,
+        callback: data => {
+          allData = data;
+          renderTable(data);
+        }
+      });
+
+      document.getElementById('search').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        const filtered = allData.filter(r => r["Nama Simati"]?.toLowerCase().includes(q));
+        renderTable(filtered);
+      });
     };
 
-    let globalData = [];
-
     function renderTable(data) {
-      globalData = data;
-      updateTable(data);
-      document.getElementById("search").oninput = e => {
-        const q = e.target.value.toLowerCase();
-        updateTable(globalData.filter(r => r.Nama.toLowerCase().includes(q)));
-      };
-    }
-
-    function updateTable(rows) {
       const tbody = document.querySelector("#dataTable tbody");
       tbody.innerHTML = "";
-      rows.forEach((r, i) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${i+1}</td><td>${r.Nama}</td><td>${r.NoLot}</td><td>${r.TarikhMeninggal}</td>`;
-        tr.onclick = () => showPopup(r);
-        tbody.appendChild(tr);
+      data.forEach((r, i) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${i+1}</td><td>${r["Nama Simati"]}</td><td>${r["No Lot (Batu)"]}</td><td>${r["Tarikh Kematian"]}</td>`;
+        row.onclick = () => showPopup(r);
+        tbody.appendChild(row);
       });
     }
 
     function showPopup(r) {
-      document.getElementById("pName").innerText = r.Nama;
-      document.getElementById("pKP").innerText = r.NoKP;
-      document.getElementById("pTarikh").innerText = r.TarikhMeninggal;
-      document.getElementById("pWaris").innerText = r.Waris;
-      document.getElementById("pTel").innerText = r.Telefon;
-      document.getElementById("pLot").innerText = r.NoLot;
-      document.getElementById("pPenduduk").innerText = r["Penduduk Kariah"];
-      document.getElementById("pMap").href = r.MapLink;
-      document.getElementById("pQR").src = r.QRImage;
+      document.getElementById("pName").textContent = r["Nama Simati"];
+      document.getElementById("pKP").textContent = r["Kad Pengenalan"];
+      document.getElementById("pTarikh").textContent = r["Tarikh Kematian"];
+      document.getElementById("pWaris").textContent = r["Nama Waris Simati:"];
+      document.getElementById("pTel").textContent = r["Telefon Waris"];
+      document.getElementById("pLot").textContent = r["No Lot (Batu)"];
+      document.getElementById("pKariah").textContent = r["Penduduk Kariah"];
+      document.getElementById("pMap").href = r["Link Peta"];
+      document.getElementById("pQR").src = r["QR Lawatan"];
       document.getElementById("overlay").style.display = "block";
       document.getElementById("popup").style.display = "block";
     }
@@ -117,6 +116,5 @@
       document.getElementById("popup").style.display = "none";
     }
   </script>
-
 </body>
 </html>
