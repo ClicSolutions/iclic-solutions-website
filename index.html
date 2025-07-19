@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>I CLIC SOLUTIONS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <img src="assets/logo.png" alt="I CLIC SOLUTIONS" class="logo">
+      <nav>
+        <a href="#home">Laman Utama</a>
+        <a href="#services">Perkhidmatan</a>
+        <a href="#about">Tentang Kami</a>
+        <a href="#contact">Hubungi</a>
+      </nav>
+      <button class="cta" onclick="scrollToSection('contact')">Hubungi Kami</button>
+    </div>
+  </header>
+
+  <section id="home" class="hero">
+    <div class="container">
+      <h1>Rakan Pertumbuhan Digital Anda</h1>
+      <p>Di I CLIC SOLUTIONS, kami menyediakan pemasaran digital dan pembangunan laman web berdasarkan data untuk memperkasakan jenama anda.</p>
+      <button onclick="scrollToSection('services')">Lihat Perkhidmatan</button>
+    </div>
+  </section>
+
+  <section id="services" class="section services">
+    <div class="container">
+      <h2>Perkhidmatan Kami</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Pembangunan Web</h3>
+          <p>Laman web tersuai dan berskala untuk keperluan anda.</p>
+        </div>
+        <div class="card">
+          <h3>Pemasaran Digital</h3>
+          <p>SEO, PPC & kempen media sosial yang berkesan.</p>
+        </div>
+        <div class="card">
+          <h3>Strategi Jenama</h3>
+          <p>Jenama yang berkesan untuk menyampaikan kisah anda.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="section about">
+    <div class="container">
+      <h2>Tentang Kami</h2>
+      <p>I CLIC SOLUTIONS ialah pasukan profesional berdedikasi untuk mencipta pengalaman digital yang memberi impak tinggi. Kami gabungkan kreativiti, teknologi & strategi dengan pengalaman lebih 10 tahun.</p>
+    </div>
+  </section>
+
+  <section id="team" class="section team">
+    <div class="container">
+      <h2>Pasukan Kami</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="https://via.placeholder.com/150" alt="Jane Doe">
+          <h4>Jane Doe</h4>
+          <p>Pengasas & CEO</p>
+        </div>
+        <div class="card">
+          <img src="https://via.placeholder.com/150" alt="John Smith">
+          <h4>John Smith</h4>
+          <p>Ketua Pembangun</p>
+        </div>
+        <div class="card">
+          <img src="https://via.placeholder.com/150" alt="Emma Lee">
+          <h4>Emma Lee</h4>
+          <p>Pengarah Pemasaran</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="section contact">
+    <div class="container">
+      <h2>Hubungi Kami</h2>
+      <form onsubmit="return handleSubmit(event)">
+        <div class="form-group"><input type="text" placeholder="Nama Anda" required></div>
+        <div class="form-group"><input type="email" placeholder="Alamat Emel" required></div>
+        <div class="form-group"><textarea rows="5" placeholder="Mesej Anda" required></textarea></div>
+        <button type="submit" class="btn-primary">Hantar Mesej</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>© 2025 I CLIC SOLUTIONS. Hak cipta terpelihara.</p>
+    </div>
+  </footer>
+
+  <script src="scripts.js"></script>
+</body>
+</html>
