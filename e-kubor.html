@@ -1,114 +1,149 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sistem e‑Kubor Masjid</title>
+  <meta charset="UTF-8">
+  <title>Sistem e-Kubor Masjid</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #eee; padding: 20px; }
-    h1 { text-align: center; color: #5cc6ff; }
-    #search { width: 100%; max-width: 400px; margin: 20px auto; padding: 10px; border-radius: 5px; border: none; font-size: 16px; }
-    table { width: 100%; border-collapse: collapse; background: #222; margin-top: 20px; }
-    th, td { padding: 10px; border: 1px solid #444; text-align: left; }
-    th { background: #333; color: #fff; }
-    tr:hover { background: #444; cursor: pointer; }
-    #overlay, #popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
-    #overlay { background: rgba(0,0,0,0.6); display: none; z-index: 9; }
-    #popup {
-      background: #fff; color: #000; max-width: 400px; margin: 5% auto; padding: 20px;
-      border-radius: 8px; box-shadow: 0 0 15px #000; display: none; z-index: 10;
-      position: relative;
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f8f9fa; }
+    h1 { text-align: center; color: #114477; }
+    #search { margin-bottom: 20px; padding: 10px; width: 100%; max-width: 500px; border: 1px solid #ccc; border-radius: 5px; }
+
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    tr:hover { background: #eef; cursor: pointer; }
+
+    #popup, #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
     }
+
+    #overlay {
+      background: rgba(0,0,0,0.6);
+      z-index: 10;
+    }
+
+    #popup {
+      z-index: 11;
+      max-width: 400px;
+      background: white;
+      padding: 20px;
+      margin: 5% auto;
+      position: relative;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #000;
+    }
+
+    #popup img { width: 100%; max-height: 200px; margin-top: 10px; }
+
     .btn-close {
-      background: #c00; color: white; padding: 6px 10px; border: none;
-      border-radius: 4px; position: absolute; top: 10px; right: 10px;
+      background: #c00;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      margin-top: 10px;
       cursor: pointer;
+      float: right;
     }
     .map-link {
-      display: inline-block; background: #0077cc; color: #fff;
-      padding: 6px 10px; text-decoration: none; border-radius: 4px;
+      display: inline-block;
       margin-top: 10px;
+      background: #0077cc;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 5px;
+      text-decoration: none;
     }
-    img.qr { margin-top: 10px; max-width: 100%; height: auto; }
   </style>
 </head>
 <body>
 
-  <h1>Sistem e‑Kubor Masjid</h1>
+  <h1>Sistem e-Kubor Masjid</h1>
+
   <input type="text" id="search" placeholder="Cari nama simati...">
 
   <table id="dataTable">
     <thead>
-      <tr><th>No</th><th>Nama Simati</th><th>No Lot</th><th>Tarikh Kematian</th></tr>
+      <tr>
+        <th>No</th>
+        <th>Nama</th>
+        <th>No Lot</th>
+        <th>Tarikh Meninggal</th>
+      </tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <div id="overlay"></div>
   <div id="popup">
-    <button class="btn-close" onclick="closePopup()">X</button>
     <h2 id="pName"></h2>
     <p><strong>No KP:</strong> <span id="pKP"></span></p>
-    <p><strong>Tarikh Kematian:</strong> <span id="pTarikh"></span></p>
-    <p><strong>Nama Waris:</strong> <span id="pWaris"></span></p>
-    <p><strong>Telefon Waris:</strong> <span id="pTel"></span></p>
-    <p><strong>No Lot:</strong> <span id="pLot"></span></p>
-    <p><strong>Penduduk Kariah:</strong> <span id="pPenduduk"></span></p>
-    <a class="map-link" id="pMap" target="_blank">📍 Lihat di Peta</a>
-    <img id="pQR" class="qr" src="" alt="QR Lawatan">
+    <p><strong>Tarikh Meninggal:</strong> <span id="pTarikh"></span></p>
+    <p><strong>Waris:</strong> <span id="pWaris"></span></p>
+    <p><strong>Telefon:</strong> <span id="pTel"></span></p>
+    <p><strong>Lot:</strong> <span id="pLot"></span></p>
+    <p><strong>Kariah:</strong> <span id="pKariah"></span></p>
+    <a id="pMap" class="map-link" target="_blank">📍 Lihat di Peta</a>
+    <img id="pQR" src="" alt="QR Lawatan">
+    <button class="btn-close" onclick="tutupPopup()">Tutup</button>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/tabletop@1.5.1/tabletop.min.js"></script>
   <script>
-    const sheetCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQInz5SadmPwbADdecXdpcz1PDMzqVnKhXsFxNAXrbUBo8iWXWyIAOSb8hpsejlVOOT9Rxxd20hDHgZ/pub?output=csv";
-    let allData = [];
+    const sheetKey = "14Zx6CbKaLws6Rk1vVs2zN5OAZp-6QypEL__d_YGaxV8";
 
-    fetch(sheetCSV)
-      .then(r => r.text())
-      .then(csv => {
-        const rows = csv.trim().split("\n").map(r => r.split(","));
-        const headers = rows.shift();
-        allData = rows.map(cells => {
-          const obj = {};
-          headers.forEach((h, i) => obj[h.trim()] = cells[i] ? cells[i].trim() : "");
-          return obj;
-        });
-        renderTable(allData);
-        document.getElementById('search').addEventListener('input', e => {
-          const q = e.target.value.toLowerCase();
-          renderTable(allData.filter(r => r["Nama Simati"]?.toLowerCase().includes(q)));
-        });
-      })
-      .catch(err => console.error("📡 Fetch error:", err));
+    window.onload = () => {
+      Tabletop.init({
+        key: sheetKey,
+        callback: showData,
+        simpleSheet: true
+      });
+    };
 
-    function renderTable(data) {
-      const tbody = document.querySelector("#dataTable tbody");
-      tbody.innerHTML = "";
-      data.forEach((r,i) => {
+    function showData(data) {
+      const tableBody = document.querySelector("#dataTable tbody");
+      tableBody.innerHTML = "";
+
+      data.forEach((row, index) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${i+1}</td><td>${r["Nama Simati"]}</td><td>${r["No Lot"]}</td><td>${r["Tarikh Kematian"]}</td>`;
-        tr.onclick = () => showPopup(r);
-        tbody.appendChild(tr);
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${row.Nama}</td>
+          <td>${row.NoLot}</td>
+          <td>${row.TarikhMeninggal}</td>
+        `;
+        tr.onclick = () => bukaPopup(row);
+        tableBody.appendChild(tr);
+      });
+
+      document.querySelector("#search").addEventListener("input", (e) => {
+        const keyword = e.target.value.toLowerCase();
+        const filtered = data.filter(r => r.Nama.toLowerCase().includes(keyword));
+        showData(filtered);
       });
     }
 
-    function showPopup(r) {
-      document.getElementById("pName").innerText = r["Nama Simati"];
-      document.getElementById("pKP").innerText = r["Kad Pengenalan"];
-      document.getElementById("pTarikh").innerText = r["Tarikh Kematian"];
-      document.getElementById("pWaris").innerText = r["Nama Waris"];
-      document.getElementById("pTel").innerText = r["Telefon Waris"];
-      document.getElementById("pLot").innerText = r["No Lot"];
-      document.getElementById("pPenduduk").innerText = r["Penduduk Kariah"];
-      document.getElementById("pMap").href = r["Link Peta"];
-      document.getElementById("pQR").src = r["QR Lawatan"];
+    function bukaPopup(row) {
+      document.getElementById("pName").innerText = row.Nama;
+      document.getElementById("pKP").innerText = row.NoKP;
+      document.getElementById("pTarikh").innerText = row.TarikhMeninggal;
+      document.getElementById("pWaris").innerText = row.Waris;
+      document.getElementById("pTel").innerText = row.Telefon;
+      document.getElementById("pLot").innerText = row.NoLot;
+      document.getElementById("pKariah").innerText = row.Kariah;
+      document.getElementById("pMap").href = row.MapLink;
+      document.getElementById("pQR").src = row.QRImage;
+
       document.getElementById("overlay").style.display = "block";
       document.getElementById("popup").style.display = "block";
     }
 
-    function closePopup() {
-      document.getElementById("overlay").style.display = "none";
+    function tutupPopup() {
       document.getElementById("popup").style.display = "none";
+      document.getElementById("overlay").style.display = "none";
     }
   </script>
+
 </body>
 </html>
